@@ -1,0 +1,43 @@
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div>
+    <h1>Kho lưu trữ bài giảng</h1>
+    <p class="muted">Quản lí học phần, tài liệu bài giảng và quyền truy cập.
+      <span class="status <%= storageStatus.ok ? 'ok' : 'bad' %>"><%= storageLabel %> — <%= storageStatus.message %></span></p>
+  </div>
+  <div class="head-actions">
+    <form class="search" method="get"><input name="q" value="<%= q %>" placeholder="Tìm học phần…"><button class="btn">Tìm</button></form>
+    <a class="btn btn-primary" href="/manage/courses/new">＋ Tạo học phần</a>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="stat"><span>Học phần</span><strong><%= courses.length %></strong></div>
+  <div class="stat"><span>Bài giảng</span><strong><%= totals.lectures %></strong></div>
+  <div class="stat"><span>Dung lượng</span><strong><%= h.formatBytes(totals.size) %></strong></div>
+  <div class="stat"><span>Tổng lượt xem</span><strong><%= totals.views %></strong></div>
+</div>
+
+<div class="card">
+  <table class="table">
+    <thead><tr><th>Mã</th><th>Học phần</th><th>Giảng viên</th><th>Phạm vi</th><th>Trạng thái</th><th class="r">Bài</th><th class="r">Dung lượng</th><th class="r">Lượt xem</th><th>Cập nhật</th><th></th></tr></thead>
+    <tbody>
+    <% if (!courses.length) { %><tr><td colspan="10" class="muted center">Chưa có học phần nào. Bấm “Tạo học phần”.</td></tr><% } %>
+    <% courses.forEach(c => { %>
+      <tr>
+        <td><span class="dot" style="background:<%= c.color %>"></span><%= c.code %></td>
+        <td><a href="/manage/courses/<%= c.id %>"><strong><%= c.title %></strong></a></td>
+        <td><%= c.owner_name || '—' %></td>
+        <td><%= c.visibility === 'all' ? '🌐 Mọi SV' : '🔒 Giới hạn' %></td>
+        <td><%- c.is_published ? '<span class="pill pill-ok">Công khai</span>' : '<span class="pill pill-warn">Nháp</span>' %></td>
+        <td class="r"><%= c.lecture_count %></td>
+        <td class="r"><%= h.formatBytes(c.total_size) %></td>
+        <td class="r"><%= c.total_views %></td>
+        <td><%= h.formatDate(c.updated_at) %></td>
+        <td class="nowrap"><a class="btn btn-sm" href="/manage/courses/<%= c.id %>">Quản lí</a> <a class="btn btn-sm btn-ghost" href="/courses/<%= c.id %>">Xem</a></td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../partials/footer') %>

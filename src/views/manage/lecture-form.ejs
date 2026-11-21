@@ -1,0 +1,21 @@
+<%- include('../partials/header') %>
+<div class="breadcrumb"><a href="/manage">Kho lưu trữ</a> › <a href="/manage/courses/<%= course.id %>"><%= course.title %></a> › <span>Sửa bài giảng</span></div>
+<form class="card form narrow" method="post" enctype="multipart/form-data" action="/manage/lectures/<%= lecture.id %>?_csrf=<%= csrfToken %>">
+  <h1>Sửa bài giảng</h1>
+  <div class="grid-2">
+    <label>Tiêu đề * <input name="title" value="<%= lecture.title %>" required></label>
+    <label>Thứ tự <input name="sort_order" type="number" min="1" value="<%= lecture.sort_order %>"></label>
+  </div>
+  <label>Mô tả ngắn <input name="description" value="<%= lecture.description || '' %>"></label>
+  <p class="muted">Tệp hiện tại: <%= h.fileIcon(lecture.mime_type, lecture.file_name) %> <%= lecture.file_name || 'Chưa có' %> (<%= h.formatBytes(lecture.file_size) %>)</p>
+  <% if (lecture.mime_type === 'text/markdown') { %>
+    <label>Nội dung Markdown <textarea name="content" rows="16"><%= content %></textarea></label>
+    <p class="muted small">Hoặc thay bằng tệp khác:</p>
+  <% } %>
+  <label class="drop">Thay tệp mới (để trống nếu giữ nguyên) <input type="file" name="file"></label>
+  <div class="form-actions">
+    <a class="btn btn-ghost" href="/manage/courses/<%= course.id %>">Hủy</a>
+    <button class="btn btn-primary">Lưu thay đổi</button>
+  </div>
+</form>
+<%- include('../partials/footer') %>

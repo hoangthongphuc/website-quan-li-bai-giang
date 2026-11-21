@@ -1,0 +1,59 @@
+<%- include('partials/header') %>
+<div class="breadcrumb"><a href="/">Bài giảng</a> › <a href="/courses/<%= course.id %>"><%= course.title %></a> › <span><%= lecture.title %></span></div>
+
+<div class="reader">
+  <aside class="reader-side">
+    <h3><a href="/courses/<%= course.id %>"><%= course.code %> · <%= course.title %></a></h3>
+    <ol class="toc">
+      <% lectures.forEach((l, i) => { %>
+        <li class="<%= l.id === lecture.id ? 'current' : '' %>"><a href="/lectures/<%= l.id %>"><span><%= i + 1 %>.</span> <%= l.title %></a></li>
+      <% }) %>
+    </ol>
+  </aside>
+
+  <article class="reader-main">
+    <header class="reader-head">
+      <div>
+        <h1><%= lecture.title %></h1>
+        <p class="muted"><%= lecture.description %></p>
+        <small class="muted">Cập nhật: <%= h.formatDate(lecture.updated_at) %> · <%= lecture.view_count + 1 %> lượt xem
+          <% if (lecture.file_name) { %> · <%= lecture.file_name %> (<%= h.formatBytes(lecture.file_size) %>)<% } %></small>
+      </div>
+      <div class="reader-tools">
+        <button class="btn btn-ghost btn-sm" data-action="fullscreen">⛶ Toàn màn hình</button>
+        <% if (canDownload && lecture.file_id) { %><a class="btn btn-sm" href="/files/<%= lecture.id %>?download=1">⬇ Tải về</a><% } %>
+        <span class="pill">👁 Chỉ đọc</span>
+      </div>
+    </header>
+
+    <div class="reader-content" id="reader-content">
+      <% if (!lecture.file_id) { %>
+        <div class="empty-state"><div class="big">📭</div><p>Bài giảng chưa có tài liệu đính kèm.</p></div>
+      <% } else if (type === 'markdown') { %>
+        <div class="prose"><%- contentHtml %></div>
+      <% } else if (type === 'text') { %>
+        <pre class="plain"><%= lecture.text %></pre>
+      <% } else if (type === 'pdf') { %>
+        <iframe class="pdf-frame" src="/files/<%= lecture.id %>#toolbar=<%= canDownload ? 1 : 0 %>" title="<%= lecture.title %>"></iframe>
+      <% } else if (type === 'image') { %>
+        <img class="media" src="/files/<%= lecture.id %>" alt="<%= lecture.title %>">
+      <% } else if (type === 'video') { %>
+        <video class="media" src="/files/<%= lecture.id %>" controls <%= canDownload ? '' : 'controlsList=nodownload' %>></video>
+      <% } else if (type === 'audio') { %>
+        <audio src="/files/<%= lecture.id %>" controls></audio>
+      <% } else { %>
+        <div class="empty-state"><div class="big">📦</div>
+          <p>Định dạng <strong><%= lecture.file_name %></strong> chưa xem trực tiếp được trên web.</p>
+          <p class="muted">Mẹo: giảng viên nên tải lên dạng PDF, hoặc dùng Google Slides/Docs khi lưu trên Drive (hệ thống tự chuyển sang PDF).</p>
+          <% if (canDownload) { %><a class="btn btn-primary" href="/files/<%= lecture.id %>?download=1">⬇ Tải về để xem</a><% } %>
+        </div>
+      <% } %>
+    </div>
+
+    <nav class="pager">
+      <% if (prev) { %><a class="btn" href="/lectures/<%= prev.id %>">← <%= prev.title %></a><% } else { %><span></span><% } %>
+      <% if (next) { %><a class="btn btn-primary" href="/lectures/<%= next.id %>"><%= next.title %> →</a><% } %>
+    </nav>
+  </article>
+</div>
+<%- include('partials/footer') %>

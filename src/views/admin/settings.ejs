@@ -1,0 +1,42 @@
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div><h1>⚙️ Cấu hình hệ thống</h1><p class="muted">Thay đổi có hiệu lực ngay (thời gian phiên áp dụng sau khi khởi động lại server).</p></div>
+</section>
+<%- include('../partials/admin-tabs') %>
+
+<div class="two-col wide-left">
+  <form class="card form" method="post" action="/admin/settings">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2>Thông tin chung</h2>
+    <label>Tên hệ thống <input name="site_name" value="<%= s.site_name %>"></label>
+    <label>Khẩu hiệu <input name="site_tagline" value="<%= s.site_tagline %>"></label>
+    <div class="grid-2">
+      <label>Đơn vị <input name="organization" value="<%= s.organization %>"></label>
+      <label>Email liên hệ <input name="contact_email" value="<%= s.contact_email %>"></label>
+    </div>
+    <label>Thông báo trên trang đăng nhập <input name="login_notice" value="<%= s.login_notice %>"></label>
+
+    <h2 class="mt">Bài giảng & bảo mật</h2>
+    <div class="grid-2">
+      <label>Dung lượng tải lên tối đa (MB) <input type="number" name="max_upload_mb" min="1" max="500" value="<%= s.max_upload_mb %>"></label>
+      <label>Thời gian phiên đăng nhập (phút) <input type="number" name="session_timeout_minutes" min="10" max="1440" value="<%= s.session_timeout_minutes %>"></label>
+    </div>
+    <label class="check"><input type="checkbox" name="allow_student_download" value="1" <%= s.allow_student_download === '1' ? 'checked' : '' %>> Cho phép sinh viên tải bài giảng về máy</label>
+    <label class="check"><input type="checkbox" name="maintenance_mode" value="1" <%= s.maintenance_mode === '1' ? 'checked' : '' %>> Chế độ bảo trì (chỉ quản trị viên truy cập được)</label>
+    <div class="form-actions"><button class="btn btn-primary">💾 Lưu cấu hình</button></div>
+  </form>
+
+  <section class="card">
+    <h2>Kho lưu trữ</h2>
+    <p>Đang dùng: <strong><%= storageLabel %></strong></p>
+    <p class="status <%= storageStatus.ok ? 'ok' : 'bad' %>"><%= storageStatus.message %></p>
+    <p class="muted small">Đổi kho lưu trữ trong file <code>.env</code>:</p>
+    <pre class="plain small">STORAGE_DRIVER=<%= driver === 'gdrive' ? 'gdrive' : 'local' %>   # local | gdrive
+GDRIVE_ROOT_FOLDER_ID=...
+GDRIVE_CLIENT_ID=...
+GDRIVE_CLIENT_SECRET=...
+GDRIVE_REFRESH_TOKEN=...</pre>
+    <p class="muted small">Xem hướng dẫn chi tiết trong <code>README.md</code> mục “Kết nối Google Drive”.</p>
+  </section>
+</div>
+<%- include('../partials/footer') %>

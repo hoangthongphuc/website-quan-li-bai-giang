@@ -1,0 +1,29 @@
+<%- include('../partials/header') %>
+<div class="breadcrumb"><a href="/manage">Kho lưu trữ</a> › <span><%= title %></span></div>
+<form class="card form narrow" method="post" action="<%= course.id ? '/manage/courses/' + course.id : '/manage/courses' %>">
+  <h1><%= title %></h1>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="grid-2">
+    <label>Mã học phần <input name="code" value="<%= course.code || '' %>" placeholder="VD: IT101"></label>
+    <label>Màu chủ đạo <input name="color" type="color" value="<%= course.color %>"></label>
+  </div>
+  <label>Tên học phần * <input name="title" value="<%= course.title || '' %>" required></label>
+  <label>Tóm tắt (hiển thị trên thẻ) <input name="summary" maxlength="500" value="<%= course.summary || '' %>"></label>
+  <label>Giới thiệu chi tiết (hỗ trợ Markdown)
+    <textarea name="description" rows="8"><%= course.description || '' %></textarea>
+  </label>
+  <div class="grid-2">
+    <label>Phạm vi truy cập
+      <select name="visibility">
+        <option value="all" <%= course.visibility === 'all' ? 'selected' : '' %>>🌐 Mọi sinh viên đã đăng nhập</option>
+        <option value="restricted" <%= course.visibility === 'restricted' ? 'selected' : '' %>>🔒 Chỉ tài khoản được cấp quyền</option>
+      </select>
+    </label>
+    <label class="check"><input type="checkbox" name="is_published" value="1" <%= course.is_published ? 'checked' : '' %>> Công khai (bỏ chọn = bản nháp, sinh viên không thấy)</label>
+  </div>
+  <div class="form-actions">
+    <a class="btn btn-ghost" href="<%= course.id ? '/manage/courses/' + course.id : '/manage' %>">Hủy</a>
+    <button class="btn btn-primary">Lưu</button>
+  </div>
+</form>
+<%- include('../partials/footer') %>

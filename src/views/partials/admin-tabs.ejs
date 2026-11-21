@@ -1,0 +1,7 @@
+<div class="tabs">
+  <a href="/admin" class="<%= path === '/admin' || path === '/admin/' ? 'active' : '' %>">📈 Tổng quan</a>
+  <a href="/admin/users" class="<%= path.startsWith('/admin/users') ? 'active' : '' %>">👥 Tài khoản</a>
+  <a href="/admin/logs" class="<%= path.startsWith('/admin/logs') ? 'active' : '' %>">🕘 Nhật ký</a>
+  <a href="/admin/settings" class="<%= path.startsWith('/admin/settings') ? 'active' : '' %>">⚙️ Cấu hình</a>
+  <a href="/admin/reports" class="<%= path.startsWith('/admin/reports') ? 'active' : '' %>">📊 Báo cáo</a>
+</div>

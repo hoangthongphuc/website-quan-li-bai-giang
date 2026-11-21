@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+<div class="breadcrumb"><a href="/">Bài giảng</a> › <span><%= course.title %></span></div>
+
+<section class="course-hero" style="--c: <%= course.color %>">
+  <div>
+    <span class="course-code"><%= course.code || 'HP' %></span>
+    <h1><%= course.title %></h1>
+    <p><%= course.summary %></p>
+    <div class="course-meta light">
+      <span>👤 Giảng viên: <%= course.owner_name || '—' %></span>
+      <span>📄 <%= lectures.length %> bài giảng</span>
+      <span><%= course.visibility === 'all' ? '🌐 Mọi sinh viên' : '🔒 Giới hạn truy cập' %></span>
+    </div>
+  </div>
+  <div class="hero-actions">
+    <% if (lectures.length) { %><a class="btn btn-light" href="/lectures/<%= lectures[0].id %>">▶ Bắt đầu học</a><% } %>
+    <% if (canEdit) { %><a class="btn btn-outline-light" href="/manage/courses/<%= course.id %>">✏️ Quản lí học phần</a><% } %>
+  </div>
+</section>
+
+<div class="two-col">
+  <section class="card">
+    <h2>Giới thiệu học phần</h2>
+    <div class="prose"><%- descriptionHtml || '<p class="muted">Chưa có nội dung giới thiệu.</p>' %></div>
+    <% if (course.owner_email) { %><p class="muted">Liên hệ giảng viên: <%= course.owner_email %></p><% } %>
+  </section>
+  <section class="card">
+    <h2>Danh sách bài giảng</h2>
+    <% if (!lectures.length) { %><p class="muted">Học phần chưa có bài giảng.</p><% } %>
+    <ol class="lecture-list">
+      <% lectures.forEach((l, i) => { %>
+      <li>
+        <a href="/lectures/<%= l.id %>">
+          <span class="num"><%= i + 1 %></span>
+          <span class="lt"><strong><%= l.title %></strong><small><%= l.description || '' %></small></span>
+          <span class="ic" title="<%= l.file_name %>"><%= h.fileIcon(l.mime_type, l.file_name) %></span>
+        </a>
+      </li>
+      <% }) %>
+    </ol>
+  </section>
+</div>
+<%- include('partials/footer') %>

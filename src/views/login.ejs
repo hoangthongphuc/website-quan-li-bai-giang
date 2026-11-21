@@ -1,0 +1,39 @@
+<%- include('partials/header') %>
+<div class="login-page">
+  <section class="login-hero">
+    <div class="hero-inner">
+      <div class="hero-logo">📚</div>
+      <h1><%= settings.site_name %></h1>
+      <p><%= settings.site_tagline %></p>
+      <ul class="hero-points">
+        <li>📖 Đọc bài giảng mọi lúc, mọi nơi</li>
+        <li>🔒 Phân quyền theo học phần, theo tài khoản</li>
+        <li>☁️ Lưu trữ an toàn trên Google Drive</li>
+      </ul>
+      <small><%= settings.organization %></small>
+    </div>
+  </section>
+  <section class="login-panel">
+    <form class="login-card" method="post" action="/login" autocomplete="on">
+      <h2>Đăng nhập</h2>
+      <p class="muted"><%= settings.login_notice %></p>
+      <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label>Tên đăng nhập / Mã sinh viên
+        <input name="username" value="<%= username %>" required autofocus autocomplete="username">
+      </label>
+      <label>Mật khẩu
+        <input name="password" type="password" required autocomplete="current-password">
+      </label>
+      <button class="btn btn-primary btn-block">Đăng nhập</button>
+      <div class="demo-accounts">
+        <strong>Tài khoản demo</strong>
+        <div><code>admin</code> / <code>admin123</code> – Quản trị viên</div>
+        <div><code>gv01</code> / <code>giangvien123</code> – Giảng viên</div>
+        <div><code>sv01</code> / <code>sinhvien123</code> – Sinh viên</div>
+        <div><code>hv01</code> / <code>hocvien123</code> – Học viên cao học</div>
+      </div>
+    </form>
+  </section>
+</div>
+<%- include('partials/footer') %>

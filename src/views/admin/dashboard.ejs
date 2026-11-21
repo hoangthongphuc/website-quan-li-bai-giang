@@ -1,0 +1,59 @@
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div><h1>Bảng quản trị</h1><p class="muted">Tổng quan hoạt động hệ thống.</p></div>
+  <div class="head-actions">
+    <a class="btn btn-ghost" href="/admin/settings">⚙️ Cấu hình</a>
+    <a class="btn btn-primary" href="/admin/reports?generate=1">📊 Tạo báo cáo quản trị</a>
+  </div>
+</section>
+<%- include('../partials/admin-tabs') %>
+
+<div class="stats">
+  <div class="stat"><span>Sinh viên / học viên</span><strong><%= roleCount.student %></strong></div>
+  <div class="stat"><span>Giảng viên</span><strong><%= roleCount.lecturer %></strong></div>
+  <div class="stat"><span>Học phần · Bài giảng</span><strong><%= courses %> · <%= lectures.n %></strong></div>
+  <div class="stat"><span>Dung lượng kho</span><strong><%= h.formatBytes(lectures.size) %></strong></div>
+  <div class="stat"><span>Đăng nhập 30 ngày</span><strong><%= logins30 %></strong></div>
+  <div class="stat"><span>Người dùng hoạt động 7 ngày</span><strong><%= active7 %></strong></div>
+  <div class="stat <%= failed7 > 10 ? 'warn' : '' %>"><span>Đăng nhập lỗi 7 ngày</span><strong><%= failed7 %></strong></div>
+  <div class="stat"><span>Tổng lượt đọc bài</span><strong><%= lectures.views %></strong></div>
+</div>
+
+<div class="two-col">
+  <section class="card">
+    <h2>Lượt đăng nhập 14 ngày gần nhất</h2>
+    <% const max = Math.max(1, ...chart.map(c => c.n)); %>
+    <div class="bars">
+      <% chart.forEach(c => { %>
+        <div class="bar-col" title="<%= c.label %>: <%= c.n %> lượt">
+          <span class="bar-v"><%= c.n || '' %></span>
+          <div class="bar" style="height: <%= Math.round(c.n / max * 100) %>%"></div>
+          <span class="bar-l"><%= c.label %></span>
+        </div>
+      <% }) %>
+    </div>
+    <p class="status <%= storageStatus.ok ? 'ok' : 'bad' %>">Kho lưu trữ: <%= storageLabel %> — <%= storageStatus.message %></p>
+  </section>
+  <section class="card">
+    <h2>Bài giảng được đọc nhiều</h2>
+    <ol class="rank">
+      <% topLectures.forEach(l => { %>
+        <li><a href="/lectures/<%= l.id %>"><%= l.title %></a><small class="muted"><%= l.course_title %></small><span class="pill"><%= l.view_count %> lượt</span></li>
+      <% }) %>
+    </ol>
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-head"><h2>Thao tác gần đây</h2><a href="/admin/logs" class="btn btn-sm btn-ghost">Xem tất cả →</a></div>
+  <table class="table">
+    <thead><tr><th>Thời gian</th><th>Tài khoản</th><th>Hành động</th><th>Chi tiết</th><th>IP</th></tr></thead>
+    <tbody>
+    <% recent.forEach(r => { %>
+      <tr><td class="nowrap"><%= h.formatDate(r.created_at) %></td><td><%= r.username || '—' %> <small class="muted"><%= r.role ? ROLE_LABELS[r.role] : '' %></small></td>
+        <td><span class="pill act-<%= r.action %>"><%= ACTION_LABELS[r.action] || r.action %></span></td><td><%= r.detail %></td><td><small><%= r.ip %></small></td></tr>
+    <% }) %>
+    </tbody>
+  </table>
+</section>
+<%- include('../partials/footer') %>

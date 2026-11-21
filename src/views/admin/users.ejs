@@ -1,0 +1,90 @@
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div><h1>Quản lí tài khoản</h1><p class="muted">Thêm, sửa, khóa tài khoản sinh viên, giảng viên và quản trị viên.</p></div>
+</section>
+<%- include('../partials/admin-tabs') %>
+
+<div class="two-col wide-left">
+  <section class="card">
+    <form class="filters" method="get">
+      <input name="q" value="<%= q %>" placeholder="Tìm tên, tài khoản, email, mã SV…">
+      <select name="role">
+        <option value="">Tất cả vai trò</option>
+        <% Object.keys(ROLE_LABELS).forEach(r => { %><option value="<%= r %>" <%= role === r ? 'selected' : '' %>><%= ROLE_LABELS[r] %></option><% }) %>
+      </select>
+      <button class="btn">Lọc</button>
+    </form>
+    <table class="table">
+      <thead><tr><th>Tài khoản</th><th>Họ tên</th><th>Vai trò</th><th>Mã SV</th><th>Trạng thái</th><th>Đăng nhập gần nhất</th><th></th></tr></thead>
+      <tbody>
+      <% users.forEach(u => { %>
+        <tr class="<%= u.is_active ? '' : 'dim' %>">
+          <td><strong><%= u.username %></strong><br><small class="muted"><%= u.email %></small></td>
+          <td><%= u.full_name %></td>
+          <td><span class="pill role-<%= u.role %>"><%= ROLE_LABELS[u.role] %></span></td>
+          <td><%= u.student_code || '' %></td>
+          <td><%- u.is_active ? '<span class="pill pill-ok">Hoạt động</span>' : '<span class="pill pill-bad">Đã khóa</span>' %></td>
+          <td class="nowrap"><%= h.formatDate(u.last_login_at) %></td>
+          <td class="nowrap">
+            <a class="btn btn-sm" href="/admin/users?edit=<%= u.id %>">Sửa</a>
+            <% if (u.id !== currentUser.id) { %>
+            <form class="inline" method="post" action="/admin/users/<%= u.id %>/delete" data-confirm="Xóa tài khoản <%= u.username %>? Lịch sử nhật ký vẫn được giữ.">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-danger">Xóa</button></form>
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+  </section>
+
+  <div>
+    <% if (editing) { %>
+    <form class="card form" method="post" action="/admin/users/<%= editing.id %>">
+      <h2>✏️ Sửa: <%= editing.username %></h2>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label>Họ tên <input name="full_name" value="<%= editing.full_name %>" required></label>
+      <label>Email <input name="email" type="email" value="<%= editing.email || '' %>"></label>
+      <div class="grid-2">
+        <label>Vai trò
+          <select name="role" <%= editing.id === currentUser.id ? 'disabled' : '' %>>
+            <% Object.keys(ROLE_LABELS).forEach(r => { %><option value="<%= r %>" <%= editing.role === r ? 'selected' : '' %>><%= ROLE_LABELS[r] %></option><% }) %>
+          </select>
+        </label>
+        <label>Mã SV/HV <input name="student_code" value="<%= editing.student_code || '' %>"></label>
+      </div>
+      <label>Đặt lại mật khẩu <input name="password" type="password" placeholder="Để trống nếu không đổi" autocomplete="new-password"></label>
+      <label class="check"><input type="checkbox" name="is_active" value="1" <%= editing.is_active ? 'checked' : '' %> <%= editing.id === currentUser.id ? 'disabled' : '' %>> Đang hoạt động (bỏ chọn để khóa)</label>
+      <div class="form-actions"><a class="btn btn-ghost" href="/admin/users">Hủy</a><button class="btn btn-primary">Lưu</button></div>
+    </form>
+    <% } %>
+
+    <form class="card form" method="post" action="/admin/users">
+      <h2>＋ Tạo tài khoản</h2>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="grid-2">
+        <label>Tên đăng nhập * <input name="username" required autocomplete="off"></label>
+        <label>Mật khẩu * <input name="password" type="password" required autocomplete="new-password"></label>
+      </div>
+      <label>Họ tên * <input name="full_name" required></label>
+      <div class="grid-2">
+        <label>Email <input name="email" type="email"></label>
+        <label>Mã SV/HV <input name="student_code"></label>
+      </div>
+      <label>Vai trò
+        <select name="role"><option value="student">Sinh viên</option><option value="lecturer">Giảng viên</option><option value="admin">Quản trị viên</option></select>
+      </label>
+      <button class="btn btn-primary">Tạo tài khoản</button>
+    </form>
+
+    <form class="card form" method="post" action="/admin/users/import">
+      <h2>📥 Nhập hàng loạt</h2>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <p class="muted small">Mỗi dòng: <code>tên_đăng_nhập,Họ tên,email,mật_khẩu,mã_SV</code> (có thể dán từ Excel đã lưu CSV).</p>
+      <textarea name="csv" rows="5" placeholder="sv03,Đỗ Văn Dũng,sv03@example.edu.vn,matkhau123,SV2026003"></textarea>
+      <label>Vai trò <select name="role"><option value="student">Sinh viên / học viên</option><option value="lecturer">Giảng viên</option></select></label>
+      <button class="btn">Nhập</button>
+    </form>
+  </div>
+</div>
+<%- include('../partials/footer') %>

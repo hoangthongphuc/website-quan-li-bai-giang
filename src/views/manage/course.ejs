@@ -1,0 +1,106 @@
+<%- include('../partials/header') %>
+<div class="breadcrumb"><a href="/manage">Kho lưu trữ</a> › <span><%= course.title %></span></div>
+
+<section class="page-head">
+  <div>
+    <h1><span class="dot lg" style="background:<%= course.color %>"></span><%= course.code %> · <%= course.title %></h1>
+    <p class="muted">Giảng viên phụ trách: <%= owner ? owner.full_name : '—' %> ·
+      <%= course.visibility === 'all' ? '🌐 Mọi sinh viên' : '🔒 Giới hạn truy cập' %> ·
+      <%= course.is_published ? 'Công khai' : 'Bản nháp' %> ·
+      Thư mục lưu trữ: <code><%= course.storage_folder_id %></code></p>
+  </div>
+  <div class="head-actions">
+    <a class="btn btn-ghost" href="/courses/<%= course.id %>">👁 Xem như SV</a>
+    <a class="btn" href="/manage/courses/<%= course.id %>/edit">✏️ Sửa thông tin</a>
+    <form method="post" action="/manage/courses/<%= course.id %>/delete" data-confirm="Xóa học phần này cùng toàn bộ bài giảng? Thư mục trên Drive sẽ được chuyển vào thùng rác.">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger">🗑 Xóa</button>
+    </form>
+  </div>
+</section>
+
+<div class="two-col wide-left">
+  <section class="card">
+    <h2>Bài giảng (<%= lectures.length %>)</h2>
+    <table class="table">
+      <thead><tr><th>#</th><th>Tiêu đề</th><th>Tệp</th><th class="r">Dung lượng</th><th class="r">Lượt xem</th><th></th></tr></thead>
+      <tbody>
+      <% if (!lectures.length) { %><tr><td colspan="6" class="muted center">Chưa có bài giảng.</td></tr><% } %>
+      <% lectures.forEach(l => { %>
+        <tr>
+          <td><%= l.sort_order %></td>
+          <td><strong><%= l.title %></strong><br><small class="muted"><%= l.description %></small></td>
+          <td><%= h.fileIcon(l.mime_type, l.file_name) %> <small><%= l.file_name || '—' %></small></td>
+          <td class="r"><%= h.formatBytes(l.file_size) %></td>
+          <td class="r"><%= l.view_count %></td>
+          <td class="nowrap">
+            <a class="btn btn-sm btn-ghost" href="/lectures/<%= l.id %>">Xem</a>
+            <a class="btn btn-sm" href="/manage/lectures/<%= l.id %>">Sửa</a>
+            <form class="inline" method="post" action="/manage/lectures/<%= l.id %>/delete" data-confirm="Xóa bài giảng “<%= l.title %>”?">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-danger">Xóa</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+
+    <h3 class="mt">＋ Thêm bài giảng</h3>
+    <form class="form" method="post" enctype="multipart/form-data" action="/manage/courses/<%= course.id %>/lectures?_csrf=<%= csrfToken %>">
+      <div class="grid-2">
+        <label>Tiêu đề * <input name="title" required placeholder="VD: Bài 4. Hàm và thủ tục"></label>
+        <label>Thứ tự <input name="sort_order" type="number" min="1" placeholder="Tự động"></label>
+      </div>
+      <label>Mô tả ngắn <input name="description"></label>
+      <div class="seg" data-seg>
+        <button type="button" class="active" data-target="up-file">📎 Tải tệp lên</button>
+        <button type="button" data-target="up-md">📝 Soạn Markdown</button>
+      </div>
+      <div id="up-file" class="seg-pane">
+        <label class="drop">Chọn tệp (PDF, ảnh, video, MP3, Markdown, Word/PowerPoint…) – tối đa <%= settings.max_upload_mb %> MB
+          <input type="file" name="file">
+        </label>
+      </div>
+      <div id="up-md" class="seg-pane hidden">
+        <textarea name="content" rows="10" placeholder="# Tiêu đề&#10;&#10;Nội dung bài giảng viết bằng Markdown…"></textarea>
+      </div>
+      <div class="form-actions"><button class="btn btn-primary">Lưu bài giảng vào kho</button></div>
+    </form>
+  </section>
+
+  <section class="card" id="access">
+    <h2>🔑 Cấp quyền truy cập</h2>
+    <p class="muted small">
+      <% if (course.visibility === 'all') { %>Học phần đang mở cho <strong>mọi sinh viên</strong>. Danh sách dưới đây dùng để cấp quyền <em>quản lí</em> cho giảng viên khác, hoặc chuẩn bị trước khi chuyển sang chế độ giới hạn.
+      <% } else { %>Học phần đang <strong>giới hạn</strong>: chỉ tài khoản trong danh sách mới xem được.<% } %>
+    </p>
+    <form class="form" method="post" action="/manage/courses/<%= course.id %>/access">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label>Tên đăng nhập / mã SV / email (nhiều mục cách nhau bởi dấu phẩy hoặc xuống dòng)
+        <textarea name="usernames" rows="3" placeholder="sv01, sv02, HV2026001"></textarea>
+      </label>
+      <label>Quyền
+        <select name="permission">
+          <option value="view">👁 Chỉ đọc (sinh viên / học viên)</option>
+          <option value="edit">✏️ Quản lí (giảng viên cùng dạy)</option>
+        </select>
+      </label>
+      <button class="btn btn-primary">Cấp quyền</button>
+    </form>
+    <table class="table mt">
+      <thead><tr><th>Tài khoản</th><th>Vai trò</th><th>Quyền</th><th></th></tr></thead>
+      <tbody>
+      <% if (!access.length) { %><tr><td colspan="4" class="muted center">Chưa cấp quyền cho ai.</td></tr><% } %>
+      <% access.forEach(a => { %>
+        <tr>
+          <td><strong><%= a.full_name %></strong><br><small class="muted"><%= a.username %> <%= a.student_code ? '· ' + a.student_code : '' %></small></td>
+          <td><%= ROLE_LABELS[a.role] %></td>
+          <td><%= a.permission === 'edit' ? '✏️ Quản lí' : '👁 Chỉ đọc' %></td>
+          <td><form method="post" action="/manage/courses/<%= course.id %>/access/<%= a.user_id %>/delete" data-confirm="Thu hồi quyền của <%= a.username %>?">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-ghost">Thu hồi</button></form></td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+  </section>
+</div>
+<%- include('../partials/footer') %>

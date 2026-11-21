@@ -1,0 +1,95 @@
+<%- include('../partials/header') %>
+<section class="page-head no-print">
+  <div><h1>📊 Báo cáo quản trị</h1><p class="muted">Chọn kỳ báo cáo, xem trên web, in ra PDF hoặc xuất Excel.</p></div>
+</section>
+<div class="no-print"><%- include('../partials/admin-tabs') %></div>
+
+<form class="card filters no-print" method="get" action="/admin/reports">
+  <input type="hidden" name="generate" value="1">
+  <label class="inline-label">Từ ngày <input type="date" name="from" value="<%= report.from %>"></label>
+  <label class="inline-label">Đến ngày <input type="date" name="to" value="<%= report.to %>"></label>
+  <button class="btn btn-primary">Tạo báo cáo</button>
+  <button type="button" class="btn" data-action="print">🖨 In / Lưu PDF</button>
+  <a class="btn" href="/admin/reports/export.xlsx?from=<%= report.from %>&to=<%= report.to %>">📗 Xuất Excel</a>
+</form>
+
+<article class="card report">
+  <header class="report-head">
+    <div>
+      <small><%= settings.organization %></small>
+      <h1>BÁO CÁO HOẠT ĐỘNG HỆ THỐNG BÀI GIẢNG</h1>
+      <p>Kỳ báo cáo: <strong><%= h.formatDate(report.from, false) %></strong> – <strong><%= h.formatDate(report.to, false) %></strong></p>
+    </div>
+    <small class="muted">Lập lúc <%= h.formatDate(generatedAt) %><br>bởi <%= currentUser.full_name %></small>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><span>Lượt đăng nhập</span><strong><%= report.logins %></strong></div>
+    <div class="stat"><span>Tài khoản truy cập</span><strong><%= report.uniqueUsers %></strong></div>
+    <div class="stat <%= report.failedLogins > 20 ? 'warn' : '' %>"><span>Đăng nhập thất bại</span><strong><%= report.failedLogins %></strong></div>
+    <div class="stat"><span>Học phần trong kho</span><strong><%= report.inventory.length %></strong></div>
+  </div>
+
+  <div class="two-col">
+    <section>
+      <h2>1. Truy cập theo vai trò</h2>
+      <table class="table"><thead><tr><th>Vai trò</th><th class="r">Lượt đăng nhập</th><th class="r">Số người</th></tr></thead><tbody>
+        <% report.byRole.forEach(r => { %><tr><td><%= ROLE_LABELS[r.role] %></td><td class="r"><%= r.logins %></td><td class="r"><%= r.users %></td></tr><% }) %>
+        <% if (!report.byRole.length) { %><tr><td colspan="3" class="muted center">Không có dữ liệu</td></tr><% } %>
+      </tbody></table>
+    </section>
+    <section>
+      <h2>2. Đăng nhập theo ngày</h2>
+      <% const mx = Math.max(1, ...report.byDay.map(d => d.n)); %>
+      <div class="hbars">
+        <% report.byDay.forEach(d => { %><div class="hbar"><span><%= h.formatDate(d.d, false) %></span><div><i style="width:<%= Math.round(d.n / mx * 100) %>%"></i></div><b><%= d.n %></b></div><% }) %>
+        <% if (!report.byDay.length) { %><p class="muted">Không có dữ liệu</p><% } %>
+      </div>
+    </section>
+  </div>
+
+  <div class="two-col">
+    <section>
+      <h2>3. Bài giảng được đọc nhiều nhất</h2>
+      <table class="table"><thead><tr><th>Bài giảng</th><th class="r">Lượt xem</th><th class="r">Người đọc</th></tr></thead><tbody>
+        <% report.topLectures.forEach(r => { %><tr><td><%= r.detail %></td><td class="r"><%= r.views %></td><td class="r"><%= r.readers %></td></tr><% }) %>
+        <% if (!report.topLectures.length) { %><tr><td colspan="3" class="muted center">Không có dữ liệu</td></tr><% } %>
+      </tbody></table>
+    </section>
+    <section>
+      <h2>4. Thống kê thao tác</h2>
+      <table class="table"><thead><tr><th>Hành động</th><th class="r">Số lần</th></tr></thead><tbody>
+        <% report.byAction.forEach(r => { %><tr><td><%= ACTION_LABELS[r.action] || r.action %></td><td class="r"><%= r.n %></td></tr><% }) %>
+      </tbody></table>
+    </section>
+  </div>
+
+  <div class="two-col">
+    <section>
+      <h2>5. Tài khoản hoạt động tích cực</h2>
+      <table class="table"><thead><tr><th>Tài khoản</th><th>Vai trò</th><th class="r">Thao tác</th></tr></thead><tbody>
+        <% report.topUsers.forEach(r => { %><tr><td><%= r.username %></td><td><%= ROLE_LABELS[r.role] || r.role %></td><td class="r"><%= r.n %></td></tr><% }) %>
+      </tbody></table>
+    </section>
+    <section>
+      <h2>6. Cảnh báo đăng nhập thất bại</h2>
+      <table class="table"><thead><tr><th>Tài khoản</th><th>IP</th><th class="r">Số lần</th></tr></thead><tbody>
+        <% report.failed.forEach(r => { %><tr><td><%= r.username %></td><td><%= r.ip %></td><td class="r"><%= r.n %></td></tr><% }) %>
+        <% if (!report.failed.length) { %><tr><td colspan="3" class="muted center">Không có</td></tr><% } %>
+      </tbody></table>
+    </section>
+  </div>
+
+  <section>
+    <h2>7. Hiện trạng kho bài giảng</h2>
+    <table class="table"><thead><tr><th>Mã</th><th>Học phần</th><th>Giảng viên</th><th>Phạm vi</th><th class="r">Số bài</th><th class="r">Dung lượng</th><th class="r">Lượt xem</th></tr></thead><tbody>
+      <% report.inventory.forEach(r => { %><tr><td><%= r.code %></td><td><%= r.title %></td><td><%= r.owner %></td><td><%= r.visibility === 'all' ? 'Mọi SV' : 'Giới hạn' %></td>
+        <td class="r"><%= r.lectures %></td><td class="r"><%= h.formatBytes(r.size) %></td><td class="r"><%= r.views %></td></tr><% }) %>
+    </tbody></table>
+  </section>
+
+  <footer class="report-sign">
+    <div><strong>Người lập báo cáo</strong><br><br><br><%= currentUser.full_name %></div>
+  </footer>
+</article>
+<%- include('../partials/footer') %>

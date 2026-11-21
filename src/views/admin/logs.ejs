@@ -1,0 +1,55 @@
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div><h1>Nhật ký hệ thống</h1><p class="muted">Lịch sử đăng nhập và thao tác của mọi tài khoản (lưu trong MySQL).</p></div>
+</section>
+<%- include('../partials/admin-tabs') %>
+
+<section class="card">
+  <div class="seg-links">
+    <a class="<%= type === 'activity' ? 'active' : '' %>" href="/admin/logs?type=activity">Thao tác</a>
+    <a class="<%= type === 'login' ? 'active' : '' %>" href="/admin/logs?type=login">Đăng nhập</a>
+  </div>
+  <form class="filters" method="get">
+    <input type="hidden" name="type" value="<%= type %>">
+    <input name="q" value="<%= q %>" placeholder="Tài khoản…">
+    <% if (type === 'activity') { %>
+    <select name="action"><option value="">Mọi hành động</option>
+      <% Object.keys(ACTION_LABELS).forEach(a => { %><option value="<%= a %>" <%= action === a ? 'selected' : '' %>><%= ACTION_LABELS[a] %></option><% }) %>
+    </select>
+    <% } %>
+    <label class="inline-label">Từ <input type="date" name="from" value="<%= from %>"></label>
+    <label class="inline-label">Đến <input type="date" name="to" value="<%= to %>"></label>
+    <button class="btn">Lọc</button>
+    <span class="muted"><%= total %> bản ghi</span>
+  </form>
+
+  <table class="table">
+    <% if (type === 'login') { %>
+      <thead><tr><th>Thời gian</th><th>Tài khoản</th><th>Kết quả</th><th>Lí do</th><th>IP</th><th>Trình duyệt</th></tr></thead>
+      <tbody>
+      <% rows.forEach(r => { %>
+        <tr><td class="nowrap"><%= h.formatDate(r.created_at) %></td><td><%= r.username %></td>
+          <td><%- r.success ? '<span class="pill pill-ok">Thành công</span>' : '<span class="pill pill-bad">Thất bại</span>' %></td>
+          <td><small><%= r.reason || '' %></small></td><td><small><%= r.ip %></small></td><td><small class="muted ua"><%= r.user_agent %></small></td></tr>
+      <% }) %>
+      </tbody>
+    <% } else { %>
+      <thead><tr><th>Thời gian</th><th>Tài khoản</th><th>Vai trò</th><th>Hành động</th><th>Đối tượng</th><th>Chi tiết</th><th>IP</th></tr></thead>
+      <tbody>
+      <% rows.forEach(r => { %>
+        <tr><td class="nowrap"><%= h.formatDate(r.created_at) %></td><td><%= r.username || '—' %></td><td><small><%= r.role ? ROLE_LABELS[r.role] : '' %></small></td>
+          <td><span class="pill act-<%= r.action %>"><%= ACTION_LABELS[r.action] || r.action %></span></td>
+          <td><small><%= r.target_type %><%= r.target_id ? ' #' + r.target_id : '' %></small></td><td><%= r.detail %></td><td><small><%= r.ip %></small></td></tr>
+      <% }) %>
+      </tbody>
+    <% } %>
+  </table>
+  <% if (pages > 1) { const qs = (p) => `?type=${type}&q=${encodeURIComponent(q)}&action=${action}&from=${from}&to=${to}&page=${p}`; %>
+  <div class="pagination">
+    <% if (page > 1) { %><a class="btn btn-sm" href="<%= qs(page - 1) %>">← Trước</a><% } %>
+    <span>Trang <%= page %> / <%= pages %></span>
+    <% if (page < pages) { %><a class="btn btn-sm" href="<%= qs(page + 1) %>">Sau →</a><% } %>
+  </div>
+  <% } %>
+</section>
+<%- include('../partials/footer') %>

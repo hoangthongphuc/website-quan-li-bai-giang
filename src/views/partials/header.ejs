@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> · <%= settings.site_name %></title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/js/app.js" defer></script>
+</head>
+<body>
+<% if (currentUser) { const u = currentUser; const isStaff = u.role !== 'student'; %>
+<header class="topbar">
+  <a class="brand" href="/"><span class="logo">📚</span><span><%= settings.site_name %></span></a>
+  <nav class="mainnav">
+    <a href="/" class="<%= path === '/' || path.startsWith('/courses') || path.startsWith('/lectures') ? 'active' : '' %>">Bài giảng</a>
+    <% if (isStaff) { %><a href="/manage" class="<%= path.startsWith('/manage') ? 'active' : '' %>">Kho lưu trữ</a><% } %>
+    <% if (u.role === 'admin') { %>
+      <a href="/admin" class="<%= path === '/admin' || path.startsWith('/admin/users') || path.startsWith('/admin/logs') ? 'active' : '' %>">Quản trị</a>
+    <% } %>
+  </nav>
+  <div class="topbar-actions">
+    <% if (u.role === 'admin') { %>
+      <a class="btn btn-ghost" href="/admin/settings" title="Cấu hình hệ thống">⚙️ Cấu hình</a>
+      <a class="btn btn-primary" href="/admin/reports?generate=1" title="Tạo báo cáo quản trị">📊 Tạo báo cáo</a>
+    <% } %>
+    <div class="usermenu">
+      <span class="avatar"><%= u.full_name.trim().split(' ').pop().charAt(0) %></span>
+      <span class="uinfo"><strong><%= u.full_name %></strong><small><%= ROLE_LABELS[u.role] %></small></span>
+      <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-ghost btn-sm">Đăng xuất</button></form>
+    </div>
+  </div>
+</header>
+<% } %>
+<main class="<%= currentUser ? 'container' : '' %>">
+<% if (flash) { %><div class="alert alert-<%= flash.type %>"><%= flash.msg %></div><% } %>
