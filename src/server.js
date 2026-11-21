@@ -105,9 +105,18 @@ async function main() {
     res.status(err.status || 500).render('error', { title: 'Lỗi', message: msg });
   });
 
-  app.listen(config.port, () => {
+  const server = app.listen(config.port, () => {
     console.log(`\n  Website Quản lí Bài giảng đang chạy: http://localhost:${config.port}`);
     console.log(`  Lưu trữ: ${storage.label} | MySQL: ${config.db.host}:${config.db.port}/${config.db.database}\n`);
+  });
+  server.on('error', (e) => {
+    if (e.code === 'EADDRINUSE') {
+      console.error(`\n  Cổng ${config.port} đang được dùng (có thể website đã chạy sẵn ở cửa sổ khác).`);
+      console.error(`  → Mở http://localhost:${config.port}, hoặc tắt cửa sổ cũ, hoặc đổi PORT trong file .env.\n`);
+    } else {
+      console.error('Lỗi server:', e.message);
+    }
+    process.exit(1);
   });
 }
 
