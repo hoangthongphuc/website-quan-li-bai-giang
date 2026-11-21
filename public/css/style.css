@@ -252,3 +252,43 @@ pre.plain { white-space: pre-wrap; }
   .search input { min-width: 0; }
   .card { overflow-x: auto; }
 }
+
+/* ----- Trình xem tài liệu (PDF.js) ----- */
+.reader-content { position: relative; }
+.doc-viewer { display: flex; flex-direction: column; gap: 10px; }
+.doc-toolbar { position: sticky; top: 64px; z-index: 4; display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; }
+.doc-zoom { min-width: 48px; text-align: center; font-weight: 600; font-size: .9rem; }
+.doc-pages { margin-left: auto; font-size: .9rem; }
+.doc-pages-wrap { background: #e9edf3; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 12px; min-height: 300px; overflow-x: auto; }
+.doc-page { background: #fff; box-shadow: 0 2px 8px rgba(15,23,42,.15); flex: none; }
+.doc-page canvas { display: block; }
+.doc-loading { margin: auto; color: var(--muted); display: flex; align-items: center; gap: 10px; text-align: center; max-width: 520px; }
+.spinner { width: 22px; height: 22px; flex: none; border: 3px solid #cbd5e1; border-top-color: var(--primary-2); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.reader-content:fullscreen .doc-pages-wrap { min-height: calc(100vh - 140px); }
+.reader-content:fullscreen .doc-toolbar { top: 0; }
+
+/* ----- Bảng tính ----- */
+.xl-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+.xl-tabs button { border: 1px solid var(--line); background: #f8fafc; padding: 5px 12px; border-radius: 8px 8px 0 0; font: inherit; font-size: .88rem; cursor: pointer; }
+.xl-tabs button.active { background: #107c41; color: #fff; border-color: #107c41; }
+.xl-scroll { overflow: auto; max-height: 75vh; border: 1px solid #d0d7de; border-radius: 6px; }
+table.xl { border-collapse: collapse; font-size: .85rem; font-family: Calibri, "Segoe UI", Arial, sans-serif; }
+table.xl th, table.xl td { border: 1px solid #e1e5ea; padding: 3px 8px; white-space: nowrap; max-width: 420px; overflow: hidden; text-overflow: ellipsis; }
+table.xl thead th { position: sticky; top: 0; background: #f3f4f6; color: #475569; font-weight: 600; z-index: 1; }
+table.xl tbody th { position: sticky; left: 0; background: #f3f4f6; color: #64748b; font-weight: 500; text-align: right; }
+
+/* ----- Bảo vệ nội dung ----- */
+.reader-content.protected, .reader-content.protected * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.reader-content.protected img, .reader-content.protected canvas, .reader-content.protected video { pointer-events: none; }
+.reader-content.protected video { pointer-events: auto; }
+.wm { position: absolute; inset: 0; z-index: 5; pointer-events: none; background-repeat: repeat; }
+.shield { display: none; }
+.reader-content.shielded > *:not(.shield) { filter: blur(28px) grayscale(1); opacity: .15; }
+.reader-content.shielded .shield { display: flex; position: absolute; inset: 0; z-index: 6; align-items: flex-start; justify-content: center; padding-top: 120px; text-align: center; color: #1e293b; font-size: 1.2rem; font-weight: 600; background: rgba(255,255,255,.6); min-height: 300px; }
+@media print {
+  .reader-content.protected { display: none !important; }
+  body:has(.reader-content.protected)::after { content: "Bài giảng được bảo vệ – không cho phép in."; display: block; padding: 40px; font-size: 20px; }
+}
+.doc-page { display: flex; align-items: center; justify-content: center; }
+.page-wait { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .9rem; }

@@ -26,25 +26,45 @@
       </div>
     </header>
 
-    <div class="reader-content" id="reader-content">
+    <div class="reader-content <%= protect ? 'protected' : '' %>" id="reader-content"
+         data-lecture="<%= lecture.id %>" data-protect="<%= protect ? 1 : 0 %>" data-watermark="<%= watermark %>" data-csrf="<%= csrfToken %>">
+      <div class="shield" aria-hidden="true"><div>🔒 Nội dung được bảo vệ<br><small>Quay lại cửa sổ này để tiếp tục đọc</small></div></div>
       <% if (!lecture.file_id) { %>
         <div class="empty-state"><div class="big">📭</div><p>Bài giảng chưa có tài liệu đính kèm.</p></div>
       <% } else if (type === 'markdown') { %>
         <div class="prose"><%- contentHtml %></div>
       <% } else if (type === 'text') { %>
         <pre class="plain"><%= lecture.text %></pre>
-      <% } else if (type === 'pdf') { %>
-        <iframe class="pdf-frame" src="/files/<%= lecture.id %>#toolbar=<%= canDownload ? 1 : 0 %>" title="<%= lecture.title %>"></iframe>
+      <% } else if (type === 'pdf' || type === 'office') { %>
+        <div class="doc-viewer" data-src="/lectures/<%= lecture.id %>/preview.pdf">
+          <div class="doc-toolbar">
+            <button type="button" class="btn btn-sm" data-zoom="-1" title="Thu nhỏ">－</button>
+            <span class="doc-zoom">100%</span>
+            <button type="button" class="btn btn-sm" data-zoom="1" title="Phóng to">＋</button>
+            <button type="button" class="btn btn-sm btn-ghost" data-zoom="0" title="Vừa khung">↔ Vừa khung</button>
+            <span class="doc-pages muted"></span>
+          </div>
+          <div class="doc-pages-wrap">
+            <div class="doc-loading"><span class="spinner"></span>
+              <%= type === 'office' ? 'Đang chuẩn bị bản xem trực tuyến (lần đầu có thể mất 10–60 giây với file lớn)…' : 'Đang tải tài liệu…' %></div>
+          </div>
+        </div>
+      <% } else if (type === 'sheet') { %>
+        <% if (previewError) { %>
+          <div class="empty-state"><div class="big">⚠️</div><p><%= previewError %></p></div>
+        <% } else { %>
+          <div class="sheet-viewer"><%- contentHtml %></div>
+        <% } %>
       <% } else if (type === 'image') { %>
         <img class="media" src="/files/<%= lecture.id %>" alt="<%= lecture.title %>">
       <% } else if (type === 'video') { %>
-        <video class="media" src="/files/<%= lecture.id %>" controls <%= canDownload ? '' : 'controlsList=nodownload' %>></video>
+        <video class="media" src="/files/<%= lecture.id %>" controls <%- canDownload ? '' : 'controlsList="nodownload noremoteplayback" disablepictureinpicture' %>></video>
       <% } else if (type === 'audio') { %>
-        <audio src="/files/<%= lecture.id %>" controls></audio>
+        <audio src="/files/<%= lecture.id %>" controls <%- canDownload ? '' : 'controlsList="nodownload"' %>></audio>
       <% } else { %>
         <div class="empty-state"><div class="big">📦</div>
           <p>Định dạng <strong><%= lecture.file_name %></strong> chưa xem trực tiếp được trên web.</p>
-          <p class="muted">Mẹo: giảng viên nên tải lên dạng PDF, hoặc dùng Google Slides/Docs khi lưu trên Drive (hệ thống tự chuyển sang PDF).</p>
+          <p class="muted">Hệ thống xem trực tuyến được: PDF, Word, PowerPoint, Excel, OpenDocument, ảnh, video, âm thanh, Markdown.</p>
           <% if (canDownload) { %><a class="btn btn-primary" href="/files/<%= lecture.id %>?download=1">⬇ Tải về để xem</a><% } %>
         </div>
       <% } %>
@@ -56,4 +76,5 @@
     </nav>
   </article>
 </div>
+<script type="module" src="/static/js/viewer.js?v=<%= v %>"></script>
 <%- include('partials/footer') %>

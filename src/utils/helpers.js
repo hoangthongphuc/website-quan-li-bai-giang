@@ -39,12 +39,22 @@ function renderMarkdown(md) {
   });
 }
 
+function fileExt(fileName) {
+  const s = String(fileName || '').toLowerCase();
+  return s.includes('.') ? s.split('.').pop() : '';
+}
+
+const OFFICE_EXT = ['doc', 'docx', 'docm', 'dot', 'dotx', 'odt', 'rtf', 'ppt', 'pptx', 'pptm', 'pps', 'ppsx', 'pot', 'potx', 'odp', 'odg', 'wpd', 'pub', 'vsd', 'vsdx'];
+const SHEET_EXT = ['xls', 'xlsx', 'xlsm', 'xlsb', 'ods', 'csv'];
+
 /** Xác định cách hiển thị bài giảng theo loại file */
 function viewerType(mime, fileName) {
   const m = String(mime || '').toLowerCase();
-  const ext = String(fileName || '').toLowerCase().split('.').pop();
+  const ext = fileExt(fileName);
   if (m === 'text/markdown' || ext === 'md' || ext === 'markdown') return 'markdown';
   if (m === 'application/pdf' || ext === 'pdf' || m.startsWith('application/vnd.google-apps.')) return 'pdf';
+  if (OFFICE_EXT.includes(ext)) return 'office';
+  if (SHEET_EXT.includes(ext)) return 'sheet';
   if (m.startsWith('image/')) return 'image';
   if (m.startsWith('video/')) return 'video';
   if (m.startsWith('audio/')) return 'audio';
@@ -53,7 +63,7 @@ function viewerType(mime, fileName) {
 }
 
 function fileIcon(mime, fileName) {
-  return { markdown: '📝', pdf: '📕', image: '🖼️', video: '🎬', audio: '🎧', text: '📄', download: '📦' }[viewerType(mime, fileName)];
+  return { markdown: '📝', pdf: '📕', office: '📘', sheet: '📗', image: '🖼️', video: '🎬', audio: '🎧', text: '📄', download: '📦' }[viewerType(mime, fileName)];
 }
 
-module.exports = { formatBytes, formatDate, isoDate, renderMarkdown, viewerType, fileIcon };
+module.exports = { formatBytes, formatDate, isoDate, renderMarkdown, viewerType, fileIcon, fileExt };

@@ -45,6 +45,8 @@ const ACTION_LABELS = {
   view_course: 'Xem học phần',
   view_lecture: 'Đọc bài giảng',
   download_lecture: 'Tải bài giảng',
+  blocked_download: 'Chặn tải bài giảng',
+  capture_attempt: '⚠ Nghi chụp/sao chép',
   create_course: 'Tạo học phần',
   update_course: 'Sửa học phần',
   delete_course: 'Xóa học phần',

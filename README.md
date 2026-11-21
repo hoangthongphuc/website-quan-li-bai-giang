@@ -12,7 +12,7 @@ Website quản lí bài giảng cho sinh viên / học viên, viết bằng **No
 
 | Script | Khi nào dùng | Tác dụng |
 |---|---|---|
-| **`setup.bat`** | Lần đầu, trên máy mới hoặc sau khi clone từ GitHub | Cài Node.js và MySQL (qua winget), khởi tạo MySQL, tạo database và user, tạo `.env`, cài thư viện, tạo dữ liệu mẫu |
+| **`setup.bat`** | Lần đầu, trên máy mới hoặc sau khi clone từ GitHub | Cài Node.js, MySQL và LibreOffice (qua winget), khởi tạo MySQL, tạo database và user, tạo `.env`, cài thư viện, tạo dữ liệu mẫu |
 | **`run.bat`** | Mỗi lần muốn chạy | Khởi động MySQL và website, mở trình duyệt |
 
 ```powershell
@@ -60,6 +60,23 @@ Website chạy tại **http://localhost:3000**.
 - Quyền **"Quản lí"** cho giảng viên khác cùng dạy (sửa được học phần). Sinh viên luôn chỉ có quyền đọc.
 - Người học **không bao giờ truy cập trực tiếp Google Drive**. Server đọc file rồi hiển thị, nên không lộ link Drive và không ai sửa được file gốc.
 - Cho phép hoặc chặn sinh viên tải file về: *Cấu hình → "Cho phép sinh viên tải bài giảng"*.
+
+### Xem trực tuyến mọi định dạng và bảo vệ nội dung
+| Định dạng | Cách hiển thị |
+|---|---|
+| PDF, Word (doc/docx), PowerPoint (ppt/pptx), OpenDocument (odt/odp), RTF | Chuyển sang PDF bằng **LibreOffice**, hiển thị bằng **PDF.js** trên canvas: không có nút tải hay in |
+| Excel (xls/xlsx), ODS, CSV | Hiển thị thành bảng tính HTML, chuyển được giữa các sheet |
+| Ảnh, video, âm thanh, Markdown, TXT | Hiển thị trực tiếp |
+
+- Việc chuyển đổi chạy ngay khi giảng viên tải bài lên. Kết quả được lưu cache trong `storage/.preview`, nên học viên mở là xem được ngay.
+- Khi học viên **không có quyền tải**, chế độ bảo vệ được bật:
+  - Link file gốc bị chặn. Link PDF xem trước cũng không mở trực tiếp được.
+  - **Watermark** hiện họ tên, tài khoản, IP và thời gian của học viên trên toàn bộ trang.
+  - Nội dung bị **che mờ** khi cửa sổ mất tiêu điểm (mở Snipping Tool, chuyển sang phần mềm quay), khi bấm **PrintScreen** hoặc Win+Shift+S. Clipboard bị xóa sau khi bấm PrintScreen.
+  - Chặn chuột phải, bôi đen, Ctrl+C/S/P, lệnh in và F12.
+  - Mọi hành vi trên được ghi vào *Nhật ký* với hành động **"⚠ Nghi chụp/sao chép"**, để admin biết ai đã cố tình làm.
+
+> ⚠️ **Giới hạn kỹ thuật:** không website nào chặn được **100%** việc chụp hoặc quay màn hình. Đây là chức năng của hệ điều hành (phần mềm quay chạy nền, điện thoại chụp màn hình…). Các biện pháp trên ngăn phần lớn thao tác thông thường. Watermark là lớp bảo vệ cuối: ảnh hoặc video lọt ra ngoài vẫn truy được người làm lộ.
 
 ---
 

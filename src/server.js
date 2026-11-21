@@ -14,6 +14,9 @@ const settings = require('./services/settings');
 const { csrf, ROLE_LABELS } = require('./middleware/auth');
 const helpers = require('./utils/helpers');
 
+// Đổi mỗi lần khởi động → trình duyệt luôn tải CSS/JS mới nhất (tránh cache cũ)
+const ASSET_VERSION = Date.now().toString(36);
+
 async function main() {
   await db.migrate();
   const storage = getStorage();
@@ -42,7 +45,13 @@ async function main() {
   app.use(compression());
   app.use(morgan(config.env === 'production' ? 'combined' : 'dev'));
   app.get('/favicon.ico', (req, res) => res.status(204).end());
-  app.use('/static',express.static(path.join(__dirname, '..', 'public'), { maxAge: '7d' }));
+  app.use('/static', express.static(path.join(__dirname, '..', 'public'), { maxAge: '7d' }));
+  // PDF.js – trình hiển thị PDF dạng canvas (không có nút tải/in như trình xem PDF mặc định)
+  const pdfjsDir = path.join(__dirname, '..', 'node_modules', 'pdfjs-dist');
+  const mjs = { maxAge: '30d', setHeaders: (res, p) => p.endsWith('.mjs') && res.setHeader('Content-Type', 'text/javascript; charset=utf-8') };
+  app.use('/static/pdfjs/build', express.static(path.join(pdfjsDir, 'build'), mjs));
+  app.use('/static/pdfjs/cmaps', express.static(path.join(pdfjsDir, 'cmaps'), { maxAge: '30d' }));
+  app.use('/static/pdfjs/standard_fonts', express.static(path.join(pdfjsDir, 'standard_fonts'), { maxAge: '30d' }));
   app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
   // Session lưu trong MySQL → khởi động lại server không mất phiên đăng nhập
@@ -73,6 +82,7 @@ async function main() {
       res.locals.storageLabel = storage.label;
       res.locals.path = req.path;
       res.locals.h = helpers;
+      res.locals.v = ASSET_VERSION;
       res.locals.flash = req.session.flash || null;
       delete req.session.flash;
       next();

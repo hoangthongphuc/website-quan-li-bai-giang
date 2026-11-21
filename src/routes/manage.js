@@ -9,6 +9,7 @@ const { getStorage } = require('../storage');
 const { requireRole, canEditCourse } = require('../middleware/auth');
 const { logActivity } = require('../services/logger');
 const settings = require('../services/settings');
+const preview = require('../services/preview');
 
 const router = express.Router();
 router.use(requireRole('admin', 'lecturer'));
@@ -152,6 +153,7 @@ router.post('/courses/:id/delete', async (req, res, next) => {
     const course = await loadEditable(req, res, req.params.id);
     if (!course) return;
     if (course.storage_folder_id) await getStorage().deleteFolder(course.storage_folder_id).catch((e) => console.error(e.message));
+    for (const l of await db.query('SELECT id FROM lectures WHERE course_id = ?', [course.id])) await preview.clear(l.id);
     await db.query('DELETE FROM courses WHERE id = ?', [course.id]);
     await logActivity(req, 'delete_course', 'course', course.id, course.title);
     flash(req, 'success', `Đã xóa học phần "${course.title}".`);
@@ -192,6 +194,8 @@ router.post('/courses/:id/lectures', async (req, res, next) => {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [course.id, b.title, b.description || null, parseInt(b.sort_order, 10) || max.m + 1, f ? f.id : null, fileName, mime, f ? f.size : 0, req.session.user.id]
     );
+    // Chuyển đổi trước để học viên mở là xem được ngay
+    preview.warm(await db.one('SELECT * FROM lectures WHERE id = ?', [r.insertId]));
     await logActivity(req, 'create_lecture', 'lecture', r.insertId, `${course.title} › ${b.title}`);
     flash(req, 'success', 'Đã thêm bài giảng.');
     res.redirect(`/manage/courses/${course.id}`);
@@ -248,6 +252,10 @@ router.post('/lectures/:id', async (req, res, next) => {
       'UPDATE lectures SET title=?, description=?, sort_order=?, file_id=?, file_name=?, mime_type=?, file_size=? WHERE id=?',
       [b.title || lecture.title, b.description || null, parseInt(b.sort_order, 10) || lecture.sort_order, file_id, file_name, mime_type, file_size, lecture.id]
     );
+    if (newFile) {
+      await preview.clear(lecture.id);
+      preview.warm(await db.one('SELECT * FROM lectures WHERE id = ?', [lecture.id]));
+    }
     await logActivity(req, 'update_lecture', 'lecture', lecture.id, `${course.title} › ${b.title || lecture.title}`);
     flash(req, 'success', 'Đã cập nhật bài giảng.');
     res.redirect(`/manage/courses/${course.id}`);
@@ -262,6 +270,7 @@ router.post('/lectures/:id/delete', async (req, res, next) => {
     if (!r) return;
     if (r.lecture.file_id) await getStorage().deleteFile(r.lecture.file_id).catch(() => {});
     await db.query('DELETE FROM lectures WHERE id = ?', [r.lecture.id]);
+    await preview.clear(r.lecture.id);
     await logActivity(req, 'delete_lecture', 'lecture', r.lecture.id, `${r.course.title} › ${r.lecture.title}`);
     flash(req, 'success', 'Đã xóa bài giảng.');
     res.redirect(`/manage/courses/${r.course.id}`);

@@ -1,7 +1,7 @@
 # =====================================================================
 #  CAI DAT LAN DAU (may moi / sau khi clone tu GitHub)
 #  Chay: nhap dup setup.bat  hoac  powershell -ExecutionPolicy Bypass -File setup.ps1
-#  - Cai Node.js LTS + MySQL 8.4 (qua winget) neu chua co
+#  - Cai Node.js LTS + MySQL 8.4 + LibreOffice (qua winget) neu chua co
 #  - Tao mysql\my.ini theo vi tri thu muc hien tai, khoi tao du lieu MySQL
 #  - Tao database qlbg + user qlbg, file .env, cai thu vien npm, tao du lieu mau
 # =====================================================================
@@ -25,6 +25,12 @@ node -v
 Step "Kiem tra MySQL Server 8.4"
 if (-not (Test-Path "$mysqlBin\mysqld.exe")) {
   winget install --id Oracle.MySQL -e --silent --accept-package-agreements --accept-source-agreements
+}
+
+# 2b. LibreOffice - dung de chuyen Word/PowerPoint/Excel sang ban xem truc tuyen
+Step "Kiem tra LibreOffice (xem truc tiep Word/PowerPoint/Excel)"
+if (-not (Test-Path "C:\Program Files\LibreOffice\program\soffice.exe")) {
+  winget install --id TheDocumentFoundation.LibreOffice -e --silent --accept-package-agreements --accept-source-agreements
 }
 
 # 3. my.ini theo duong dan thu muc hien tai
